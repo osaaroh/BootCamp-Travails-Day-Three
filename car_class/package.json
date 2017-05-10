@@ -25,5 +25,5 @@
   "devDependencies": {
     "jasmine": "^2.6.0",
     "jasmine-node": "^1.14.5"
-  }
+ }
 }
