@@ -1,0 +1,17 @@
+{
+  "name": "word_class",
+  "version": "1.0.0",
+  "description": "",
+  "main": "word_class.js",
+  "scripts": {
+    "test": "jasmine"
+  },
+  "author": "Osaro Iyoha",
+  "license": "ISC",
+  "devDependencies": {
+    "jasmine-node": "^1.14.5"
+  },
+  "dependencies": {
+    "jasmine-node": "^1.14.5"
+  }
+}
