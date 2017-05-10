@@ -1,0 +1,29 @@
+{
+  "name": "car_class",
+  "version": "1.0.0",
+  "description": "Car class and its methods",
+  "main": "car_class.js",
+  "scripts": {
+    "test": "jasmine"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Master-Osaro/Boot-Camp-Exercises-Day3.git"
+  },
+  "keywords": [
+    "JavsScript",
+    "Jasmine",
+    "BDD",
+    "TDD"
+  ],
+  "author": "Osaro Iyoha",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Master-Osaro/Boot-Camp-Exercises-Day3/issues"
+  },
+  "homepage": "https://github.com/Master-Osaro/Boot-Camp-Exercises-Day3#readme",
+  "devDependencies": {
+    "jasmine": "^2.6.0",
+    "jasmine-node": "^1.14.5"
+  }
+}
