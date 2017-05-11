@@ -18,13 +18,6 @@ var reqGet = https.request(getOptions, function(res) {
     console.log("statusCode: ", res.statusCode);
     console.log("headers: ", res.headers);
 
-
-    res.on('data', function(d) {
-        console.info('GET result:\n');
-        process.stdout.write(d);
-        console.info('\n\nCall completed');
-    });
-
 });
 
 reqGet.end();
