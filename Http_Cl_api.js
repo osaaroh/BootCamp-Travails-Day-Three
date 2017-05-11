@@ -1,130 +1,102 @@
-var https = require('https');
+/* A simple Command Line Application to get the Geographical Location
+* that uses a Google API
+* */
+function getMyGoogleMapLocation(){
+        // Initialize the response
+        response.content = '';
+        response.headers['Content-Type'] = 'application/json';
+        try {
 
-/**
- * HOW TO Make an HTTP Call - GET
- */
-// options for GET
-var optionsget = {
-    host : 'www.nairaland.com', // here only the domain name
-    // (no http/https !)
-    port : 443,
-    path : '/youscada', // the rest of the url with parameters if needed
-    method : 'GET' // do GET
-};
+            if ((request.queryParams.postalcode == undefined) ||
 
-console.info('Options prepared:');
-console.info(optionsget);
-console.info('Do the GET call');
+                (request.queryParams.country == undefined)) {
 
-// do the GET request
-var reqGet = https.request(optionsget, function(res) {
-    console.log("statusCode: ", res.statusCode);
-    // uncomment or comment it for header details
-console.log("headers: ", res.headers);
+                console.log('"postalcode" and "country" query parameters are required');
 
+            }
 
-    res.on('data', function(d) {
-        console.info('GET result:\n');
-        process.stdout.write(d);
-        console.info('\n\nCall completed');
-    });
+            // Send an HTTP GET to the URL that we construct
 
-});
+            var geocoding = httpClient.get('http://maps.googleapis.com/maps/api/geocode/json?address=' + request.queryParams.postalcode +'&region=' + request.queryParams.country +'&sensor=false');
+            geocoding.waitForComplete();
 
-reqGet.end();
-reqGet.on('error', function(e) {
-    console.error(e);
-});
+            if (!ding.isSuccess()) {
+                console.log( 'Error contacting geocoding web service');
+            }
+            // We got a response. Parse the JSON into a JavaScript object.
+            geocodeResponse = geocoding.getResponse().content.asJSON;
 
-/**
- * HOW TO Make an HTTP Call - POST
- */
-// do a POST request
-// create the JSON object
-jsonObject = JSON.stringify({
-    "message" : "The web of things is approaching, let do some tests to be ready!",
-    "name" : "Test message posted with node.js",
-    "caption" : "Some tests with node.js",
-    "link" : "http://www.youscada.com",
-    "description" : "this is a description",
-    "picture" : "http://youscada.com/wp-content/uploads/2012/05/logo2.png",
-    "actions" : [ {
-        "name" : "youSCADA",
-        "link" : "http://www.youscada.com"
-    } ]
-});
+            if (geocodeResponse.status != 'OK') {
+                console.log('Error returned from geocoding web service: ' + geocodeResponse.status);
 
-// prepare the header
-var postheaders = {
-    'Content-Type' : 'application/json',
-    'Content-Length' : Buffer.byteLength(jsonObject, 'utf8')
-};
+            }
 
-// the post options
-var optionspost = {
-    host : 'graph.facebook.com',
-    port : 443,
-    path : '/youscada/feed?access_token=your_api_key',
-    method : 'POST',
-    headers : postheaders
-};
+            // Go through the JavaScript returned by Google and get the results
+            var lat = geocodeResponse.results[0].geometry.location.lat;
+            var lng = geocodeResponse.results[0].geometry.location.lng;
 
-console.info('Options prepared:');
-console.info(optionspost);
-console.info('Do the POST call');
+            // Send another HTTP GET to the other service
+            var altitude = httpClient.get(
 
-// do the POST call
-var reqPost = https.request(optionspost, function(res) {
-    console.log("statusCode: ", res.statusCode);
-    // uncomment it for header details
-//  console.log("headers: ", res.headers);
+                'http://maps.googleapis.com/maps/api/elevation/json?sensor=false&locations=' +lat + ',' + lng);
+                 altitude.waitForComplete();
 
-    res.on('data', function(d) {
-        console.info('POST result:\n');
-        process.stdout.write(d);
-        console.info('\n\nPOST completed');
-    });
-});
+            if (!altitude.isSuccess()) {
+                console.log( 'Error contacting altitude web service');
+            }
 
-// write the json data
-reqPost.write(jsonObject);
-reqPost.end();
-reqPost.on('error', function(e) {
-    console.error(e);
-});
+            altitudeResponse = altitude.getResponse().content.asJSON;
 
-/**
- * Get Message - GET
- */
-// options for GET
-var optionsgetmsg = {
-    host : 'graph.facebook.com', // here only the domain name
-    // (no http/https !)
-    port : 443,
-    path : '/youscada/feed?access_token=you_api_key', // the rest of the url with parameters if needed
-    method : 'GET' // do GET
-};
-
-console.info('Options prepared:');
-console.info(optionsgetmsg);
-console.info('Do the GET call');
-
-// do the GET request
-var reqGet = https.request(optionsgetmsg, function(res) {
-    console.log("statusCode: ", res.statusCode);
-    // uncomment it for header details
-//  console.log("headers: ", res.headers);
+            if (altitudeResponse.status != 'OK') {
+                console.log( 'Error returned from altitude web service: ' + altitudeResponse.status);
+            }
 
 
-    res.on('data', function(d) {
-        console.info('GET result after POST:\n');
-        process.stdout.write(d);
-        console.info('\n\nCall completed');
-    });
+            var alt = altitudeResponse.results[0].elevation;
+            // Final assembly of the JSON object
 
-});
+            var body = response.content.asJSON;
+            body.country = request.queryParams.country;
+            body.postalcode = request.queryParams.postalcode;
+            body.location = { latitude: lat, longitude: lng};
+            body.altitude = { meters : alt, feet : alt * 3.2808399};
+        }
 
-reqGet.end();
-reqGet.on('error', function(e) {
-    console.error(e);
-});
+        catch (err) {
+            // Handle any error that may have happened previously by generating a response
+            response.content.asJSON.error = err;
+        }
+
+    /*
+    * calling the API
+    * $ curl "http://{myorg}-test.apigee.net/javascript-mashup-cookbook?country=us&postalcode=80503"
+    *
+     */
+
+/*
+
+    * The response is a JSON object that includes the geocoded location (latitude/longitude)
+    * for the center of the supplied postal code area combined with the elevation at
+    * that geocoded location.
+
+   {
+     {
+
+     "country": "us",
+     "postalcode": 80503,
+     "location": {
+     "latitude": 40.1724007,
+     "longitude": -105.1960795
+     },
+
+     "altitude": {
+     "meters": 1570.249755859375,
+     "feet": 5151.7380519886965
+     }
+     }
+
+    *
+
+    * */
+
+}
