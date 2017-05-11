@@ -14,13 +14,13 @@ console.info(getOptions);
 console.info('Do the GET call');
 
 // do the GET request
-var reqGet = https.request(getOptions, function(res) {
+let getRequest = https.request(getOptions, function(res) {
     console.log("statusCode: ", res.statusCode);
     console.log("headers: ", res.headers);
 
 });
 
-reqGet.end();
-reqGet.on('error', function(e) {
+getRequest.end();
+getRequest.on('error', function(e) {
     console.error(e);
 });
